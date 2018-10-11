@@ -32,12 +32,17 @@ import javafx.scene.control.TableView;
  *
  * @author melvinlyf
  */
-class GloVar {
-    public static SerialPort COM_PORT = null;
+
+class GV {
+    //Variable
+    public static SerialPort COM_PORT_1 = null;
+    public static SerialPort COM_PORT_2 = null;
     
     //Input and Output Streams for Sending and Receiving Data
-    public static InputStream input = null;
-    public static OutputStream output = null;
+    public static InputStream input_P1 = null;
+    public static OutputStream output_P1 = null;
+    public static InputStream input_P2 = null;
+    public static OutputStream output_P2 = null;
     
     public static String CurrDist = null;
 
@@ -45,17 +50,20 @@ class GloVar {
 
 public class FXMLDocumentController implements Initializable {
     
-    @FXML 
-    ChoiceBox choice_box;
+    @FXML ChoiceBox CHOICE_BOX_1;
+    @FXML ChoiceBox CHOICE_BOX_2;
+    @FXML TableView<DataStruct> TV_1;
+    @FXML TableView<DataStruct> TV_2;
+    
     ObservableList<Object> myChoiceBoxData = FXCollections.observableArrayList();
     Button OPEN_PORT;
     Label SENSOR_VALUE;
-    @FXML TableView<DataStruct> tableView;
+
     
-    public static ObservableList <DataBank> Data = 
-            FXCollections.observableArrayList(
-                new DataBank("Field1","Field2"),
-                new DataBank("Field3","Field4"));
+//    public static ObservableList <DataBank> Data = 
+//            FXCollections.observableArrayList(
+//                new DataBank("Field1","Field2"),
+//                new DataBank("Field3","Field4"));
    
     
     @FXML
@@ -64,25 +72,25 @@ public class FXMLDocumentController implements Initializable {
     }
     
     @FXML
-    private void handleOpenPort(ActionEvent event) throws IOException {
-        if(GloVar.COM_PORT!= null) 
+    private void handleOpenPort_1(ActionEvent event) throws IOException {
+        if(GV.COM_PORT_1!= null) 
         {
             //Open Port
-            System.out.println("Initialising Connection to " + GloVar.COM_PORT);
-            boolean portStatus = GloVar.COM_PORT.openPort();          
-            System.out.println("handleOpenPort Status: " + portStatus + " Port ID: " +GloVar.COM_PORT.getSystemPortName());
+            System.out.println("Initialising Connection to " + GV.COM_PORT_1);
+            boolean portStatus = GV.COM_PORT_1.openPort();          
+            System.out.println("handleOpenPort Status: " + portStatus + " Port ID: " +GV.COM_PORT_1.getSystemPortName());
             
             //Set Baud Rate
-            GloVar.COM_PORT.setBaudRate(38400);
+            GV.COM_PORT_1.setBaudRate(38400);
             
             //Init Streams
-            GloVar.input = GloVar.COM_PORT.getInputStream();
-            GloVar.output = GloVar.COM_PORT.getOutputStream();
+            GV.input_P1 = GV.COM_PORT_1.getInputStream();
+            GV.output_P1 = GV.COM_PORT_1.getOutputStream();
             
             //Init Cal
             DateFormat dateFormat = new SimpleDateFormat ("yyyy/MM/dd HH:mm:ss:SSS");
 
-            GloVar.COM_PORT.addDataListener(new SerialPortDataListener(){
+            GV.COM_PORT_1.addDataListener(new SerialPortDataListener(){
                 
                 @Override
                 public int getListeningEvents() 
@@ -98,14 +106,14 @@ public class FXMLDocumentController implements Initializable {
                         return;  
                     
                     try {
-                        char singleData = (char)GloVar.input.read();
+                        char singleData = (char)GV.input_P1.read();
                         
                         if(singleData!=13) //if NotEqual CR detected
                         {
-                            if(GloVar.CurrDist == null)
-                                GloVar.CurrDist=Character.toString(singleData);
+                            if(GV.CurrDist == null)
+                                GV.CurrDist=Character.toString(singleData);
                             else
-                                GloVar.CurrDist = GloVar.CurrDist.concat(Character.toString(singleData));
+                                GV.CurrDist = GV.CurrDist.concat(Character.toString(singleData));
 
                             System.out.print(singleData);
                         }
@@ -114,14 +122,12 @@ public class FXMLDocumentController implements Initializable {
                             Date date = new Date();
                             String cTime = dateFormat.format(date);
                             
-                            addData(cTime,GloVar.CurrDist);
+                            addData_P1(cTime,GV.CurrDist);
                             
-                            GloVar.CurrDist = null; //reset temp buffer
+                            GV.CurrDist = null; //reset temp buffer
                             
-
                             //Data.add(new DataBank(cTime,GloVar.CurrDist));
 
-                            
                             System.out.print("    " + cTime);
                             System.out.println("");
                         }
@@ -135,16 +141,103 @@ public class FXMLDocumentController implements Initializable {
             });
         }
     }
+        
+@FXML
+    private void handleOpenPort_2(ActionEvent event) throws IOException {
+        if(GV.COM_PORT_2!= null) 
+        {
+            //Open Port
+            System.out.println("Initialising Connection to " + GV.COM_PORT_2);
+            boolean portStatus = GV.COM_PORT_2.openPort();          
+            System.out.println("handleOpenPort Status: " + portStatus + " Port ID: " +GV.COM_PORT_2.getSystemPortName());
             
+            //Set Baud Rate
+            GV.COM_PORT_2.setBaudRate(38400);
+            
+            //Init Streams
+            GV.input_P2 = GV.COM_PORT_2.getInputStream();
+            GV.output_P2 = GV.COM_PORT_2.getOutputStream();
+            
+            //Init Cal
+            DateFormat dateFormat = new SimpleDateFormat ("yyyy/MM/dd HH:mm:ss:SSS");
+
+            GV.COM_PORT_2.addDataListener(new SerialPortDataListener(){
+                
+                @Override
+                public int getListeningEvents() 
+                {
+                    return SerialPort.LISTENING_EVENT_DATA_AVAILABLE;
+                }
+                
+                @Override
+                public void serialEvent(SerialPortEvent event)
+                {
+                    //If no data avail, exit function
+                    if(event.getEventType() != SerialPort.LISTENING_EVENT_DATA_AVAILABLE)
+                        return;  
+                    
+                    try {
+                        char singleData = (char)GV.input_P2.read();
+                        
+                        if(singleData!=13) //if NotEqual CR detected
+                        {
+                            if(GV.CurrDist == null)
+                                GV.CurrDist=Character.toString(singleData);
+                            else
+                                GV.CurrDist = GV.CurrDist.concat(Character.toString(singleData));
+
+                            System.out.print(singleData);
+                        }
+                        else
+                        {     
+                            Date date = new Date();
+                            String cTime = dateFormat.format(date);
+                            
+                            addData_P2(cTime,GV.CurrDist);
+                            
+                            GV.CurrDist = null; //reset temp buffer
+                            
+                            //Data.add(new DataBank(cTime,GloVar.CurrDist));
+
+                            System.out.print("    " + cTime);
+                            System.out.println("");
+                        }
+                        
+                    } catch (IOException ex) {
+                        Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+
+                }
+            });
+        }
+    }
+    
     @FXML
-    private void handleClosePort(ActionEvent event) {
-        if(GloVar.COM_PORT!= null) 
+    private void handleClosePort_1(ActionEvent event) {
+        if(GV.COM_PORT_1!= null) 
         {
 
-            boolean portStatus = GloVar.COM_PORT.closePort();
+            boolean portStatus = GV.COM_PORT_1.closePort();
 
             
-            System.out.println("handleClosePort Status: " + portStatus + " Port ID: " +GloVar.COM_PORT.getSystemPortName());
+            System.out.println("handleClosePort Status: " + portStatus + " Port ID: " +GV.COM_PORT_1.getSystemPortName());
+        }
+        else
+        {
+            System.out.println("Close Port Button Error!, No device selected!");
+        }
+    }
+    
+    @FXML
+    private void handleClosePort_2(ActionEvent event) {
+        if(GV.COM_PORT_2!= null) 
+        {
+
+            boolean portStatus = GV.COM_PORT_2.closePort();
+
+            
+            System.out.println("handleClosePort Status: " + portStatus + " Port ID: " +GV.COM_PORT_2.getSystemPortName());
         }
         else
         {
@@ -153,8 +246,14 @@ public class FXMLDocumentController implements Initializable {
     }
           
     @FXML
-    protected void addData (String tTime, String tDist){
-        ObservableList<DataStruct> dataStore = tableView.getItems();
+    protected void addData_P1 (String tTime, String tDist){
+        ObservableList<DataStruct> dataStore = TV_1.getItems();
+        dataStore.add(new DataStruct(tTime,tDist));
+    }
+    
+    @FXML
+    protected void addData_P2 (String tTime, String tDist){
+        ObservableList<DataStruct> dataStore = TV_2.getItems();
         dataStore.add(new DataStruct(tTime,tDist));
     }
     
@@ -163,14 +262,21 @@ public class FXMLDocumentController implements Initializable {
         
         myChoiceBoxData.addAll((Object[])SerialPort.getCommPorts());
         
-        choice_box.getItems().clear();
-        choice_box.setItems(myChoiceBoxData);
-        
-        choice_box.setOnAction((event) -> {          
-            GloVar.COM_PORT=SerialPort.getCommPorts()[choice_box.getSelectionModel().getSelectedIndex()];
-            System.out.println("ChoiceBox Action: " + GloVar.COM_PORT);
+        CHOICE_BOX_1.getItems().clear();
+        CHOICE_BOX_2.getItems().clear();
+
+        CHOICE_BOX_1.setItems(myChoiceBoxData);
+        CHOICE_BOX_2.setItems(myChoiceBoxData);
+
+        CHOICE_BOX_1.setOnAction((event) -> {          
+            GV.COM_PORT_1=SerialPort.getCommPorts()[CHOICE_BOX_1.getSelectionModel().getSelectedIndex()];
+            System.out.println("ChoiceBox1 Action: " + GV.COM_PORT_1);
         });
         
+        CHOICE_BOX_2.setOnAction((event) -> {          
+            GV.COM_PORT_2=SerialPort.getCommPorts()[CHOICE_BOX_2.getSelectionModel().getSelectedIndex()];
+            System.out.println("ChoiceBox2 Action: " + GV.COM_PORT_2);
+        });
     }
     
 }
