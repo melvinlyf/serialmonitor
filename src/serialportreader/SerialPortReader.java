@@ -19,10 +19,12 @@ public class SerialPortReader extends Application {
     
     @Override
     public void start(Stage stage) throws Exception {
+        // Initialise FXMLLoader
         Parent root = FXMLLoader.load(getClass().getResource("FXMLDocument.fxml"));
         
         Scene scene = new Scene(root);
         
+        stage.setTitle("Test");
         stage.setScene(scene);
         stage.show();
     }

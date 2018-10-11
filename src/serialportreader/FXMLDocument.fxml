@@ -1,14 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.collections.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.text.*?>
 <?import java.lang.*?>
 <?import java.util.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.collections.FXCollections?>
+<?import serialportreader.*?>
+<?import javafx.scene.control.cell.*?>
 
-<AnchorPane id="AnchorPane" prefHeight="200" prefWidth="320" xmlns:fx="http://javafx.com/fxml/1" fx:controller="serialportreader.FXMLDocumentController">
+<AnchorPane id="AnchorPane" prefHeight="670.0" prefWidth="731.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="serialportreader.FXMLDocumentController">
     <children>
-        <Button layoutX="126" layoutY="90" text="Click Me!" onAction="#handleButtonAction" fx:id="button" />
-        <Label layoutX="126" layoutY="120" minHeight="16" minWidth="69" fx:id="label" />
+        <TabPane layoutX="39.0" layoutY="150.0" prefHeight="500.0" prefWidth="500.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <tabs>
+                <Tab text="Configuration">
+                    <content>
+                        <AnchorPane>
+                            <children>
+                                <Button fx:id="button" layoutX="642.0" layoutY="28.0" onAction="#handleButtonAction" text="Click Me!" />
+                                <ChoiceBox fx:id="choice_box" layoutX="14.0" layoutY="14.0" prefHeight="27.0" prefWidth="250.0" />
+                                <Button id="OPEN_PORT" layoutX="14.0" layoutY="55.0" mnemonicParsing="false" onAction="#handleOpenPort" text="Open Port" />
+                                <Button id="CLOSE_PORT" layoutX="106.0" layoutY="55.0" mnemonicParsing="false" onAction="#handleClosePort" text="Close Port" />
+                                <Label fx:id="SENSOR_VALUE" layoutX="21.0" layoutY="96.0" text="Label" />
+                        <TableView fx:id="tableView" layoutX="21.0" layoutY="121.0" prefHeight="493.0" prefWidth="690.0">
+                          <columns>
+                            <TableColumn fx:id="tableC1" prefWidth="345.0" text="C1">
+                                <cellValueFactory>
+                                    <PropertyValueFactory property="timeData" />
+                                </cellValueFactory>
+                            </TableColumn>
+                            <TableColumn fx:id="tableC2" minWidth="0.0" prefWidth="344.0" text="C2">
+                                <cellValueFactory>
+                                    <PropertyValueFactory property="distData" />
+                                </cellValueFactory>
+                            </TableColumn>
+                          </columns>
+                          <items>
+                              <FXCollections fx:factory="observableArrayList">
+                                <DataStruct distData="456" timeData="123" />
+                              </FXCollections>
+                          </items>
+                        </TableView>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+                <Tab text="Output">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
     </children>
 </AnchorPane>
