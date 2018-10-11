@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.effect.*?>
 <?import javafx.collections.*?>
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.text.*?>
@@ -12,27 +14,26 @@
 <?import serialportreader.*?>
 <?import javafx.scene.control.cell.*?>
 
-<AnchorPane id="AnchorPane" prefHeight="670.0" prefWidth="731.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="serialportreader.FXMLDocumentController">
+<AnchorPane id="AnchorPane" prefHeight="760.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="serialportreader.FXMLDocumentController">
     <children>
         <TabPane layoutX="39.0" layoutY="150.0" prefHeight="500.0" prefWidth="500.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <tabs>
                 <Tab text="Configuration">
                     <content>
-                        <AnchorPane>
+                        <AnchorPane prefHeight="637.0" prefWidth="857.0">
                             <children>
-                                <Button fx:id="button" layoutX="642.0" layoutY="28.0" onAction="#handleButtonAction" text="Click Me!" />
-                                <ChoiceBox fx:id="choice_box" layoutX="14.0" layoutY="14.0" prefHeight="27.0" prefWidth="250.0" />
-                                <Button id="OPEN_PORT" layoutX="14.0" layoutY="55.0" mnemonicParsing="false" onAction="#handleOpenPort" text="Open Port" />
-                                <Button id="CLOSE_PORT" layoutX="106.0" layoutY="55.0" mnemonicParsing="false" onAction="#handleClosePort" text="Close Port" />
-                                <Label fx:id="SENSOR_VALUE" layoutX="21.0" layoutY="96.0" text="Label" />
-                        <TableView fx:id="tableView" layoutX="21.0" layoutY="121.0" prefHeight="493.0" prefWidth="690.0">
+                                <ChoiceBox fx:id="CHOICE_BOX_1" layoutX="20.0" layoutY="45.0" prefHeight="27.0" prefWidth="250.0" />
+                                <Button id="OPEN_PORT" layoutX="20.0" layoutY="85.0" mnemonicParsing="false" onAction="#handleOpenPort_1" text="Open Port" />
+                                <Button id="CLOSE_PORT" layoutX="120.0" layoutY="85.0" mnemonicParsing="false" onAction="#handleClosePort_1" text="Close Port" />
+                                <Label fx:id="SENSOR_VALUE" layoutX="20.0" layoutY="135.0" text="Data per Second:" />
+                        <TableView fx:id="TV_1" layoutX="15.0" layoutY="200.0" prefHeight="500.0" prefWidth="570.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0">
                           <columns>
-                            <TableColumn fx:id="tableC1" prefWidth="345.0" text="C1">
+                            <TableColumn fx:id="tableC1" editable="false" prefWidth="285.0" sortType="DESCENDING" text="Timestamp">
                                 <cellValueFactory>
                                     <PropertyValueFactory property="timeData" />
                                 </cellValueFactory>
                             </TableColumn>
-                            <TableColumn fx:id="tableC2" minWidth="0.0" prefWidth="344.0" text="C2">
+                            <TableColumn fx:id="tableC2" minWidth="0.0" prefWidth="285.0" resizable="false" sortType="DESCENDING" text="Sensor ASCII">
                                 <cellValueFactory>
                                     <PropertyValueFactory property="distData" />
                                 </cellValueFactory>
@@ -44,6 +45,40 @@
                               </FXCollections>
                           </items>
                         </TableView>
+                        <TableView fx:id="TV_2" layoutX="615.0" layoutY="200.0" prefHeight="500.0" prefWidth="570.0" AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="15.0">
+                           <columns>
+                              <TableColumn fx:id="tableC11" prefWidth="285.0" resizable="false" text="Timestamp">
+                                 <cellValueFactory>
+                                    <PropertyValueFactory property="timeData" />
+                                 </cellValueFactory>
+                              </TableColumn>
+                              <TableColumn fx:id="tableC21" minWidth="0.0" prefWidth="285.0" text="Sensor ASCII">
+                                 <cellValueFactory>
+                                    <PropertyValueFactory property="distData" />
+                                 </cellValueFactory>
+                              </TableColumn>
+                           </columns>
+                           <items>
+                              <FXCollections fx:factory="observableArrayList">
+                                 <DataStruct distData="456" timeData="123" />
+                              </FXCollections>
+                           </items>
+                        </TableView>
+                        <Button id="CLOSE_PORT" layoutX="720.0" layoutY="85.0" mnemonicParsing="false" onAction="#handleClosePort_2" text="Close Port" />
+                        <Button id="OPEN_PORT" layoutX="620.0" layoutY="85.0" mnemonicParsing="false" onAction="#handleOpenPort_2" text="Open Port" />
+                        <ChoiceBox fx:id="CHOICE_BOX_2" layoutX="620.0" layoutY="45.0" prefHeight="27.0" prefWidth="250.0" />
+                        <Label layoutX="20.0" layoutY="20.0" text="Serial Port (1)">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <Label layoutX="620.0" layoutY="20.0" text="Serial Port (2)">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <Line fill="BLACK" layoutX="600.0" startX="-0.0" startY="726.0" stroke="#d0c0c0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="599.5" AnchorPane.rightAnchor="599.5" AnchorPane.topAnchor="0.0" />
+                        <Label fx:id="SENSOR_VALUE1" layoutX="620.0" layoutY="135.0" text="Data per Second:" />
                             </children>
                         </AnchorPane>
                     </content>
