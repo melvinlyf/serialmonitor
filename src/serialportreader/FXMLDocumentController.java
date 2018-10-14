@@ -45,22 +45,24 @@ class GV {
     public static String P1_Buff = null;
     public static int P1_ValidCount = 0;
     public static int P1_InvalidCount = 0;
-        
+    public static long P1_PrevTime = 0;
+    public static long P1_CurrTime = 0;
+    public static int P1_SecondsElapsed = 0;
+    public static String P1_FilePath = null;    
+    
     public static InputStream P2_Input = null;
     public static OutputStream P2_Output = null;
     public static String P2_Buff = null;
     public static int P2_ValidCount = 0;
-    public static int P2_InvalidCount = 0;
-
-    public static long lastTime = 0;
-    public static long currTime = 0;
-    public static int secondsCount = 0;
+    public static int P2_InvalidCount = 0;    
+    public static long P2_PrevTime = 0;
+    public static long P2_CurrTime = 0;
+    public static int P2_SecondsElapsed = 0;
+    public static String P2_FilePath = null;
     
-    public static String filePath = null;
     public static BufferedWriter P1_BW = null;
     public static BufferedWriter P2_BW = null;
 }
-
 
 public class FXMLDocumentController implements Initializable {
     
@@ -70,74 +72,95 @@ public class FXMLDocumentController implements Initializable {
     @FXML TableView<DataStruct> TV_2;
     
     ObservableList<Object> myChoiceBoxData = FXCollections.observableArrayList(); 
-    
-    @FXML
-    private void handleOpenPort_1(ActionEvent event) throws IOException {
-        if(GV.COM_PORT_1!= null) 
-        {
-            //Open Port
-            System.out.println("Initialising Connection to " + GV.COM_PORT_1);   
-            System.out.println("handleOpenPort Status: " + GV.COM_PORT_1.openPort() + " Port ID: " +GV.COM_PORT_1.getSystemPortName());
-            
-            //Set Baud Rate
-            GV.COM_PORT_1.setBaudRate(38400);
-            
-            //Init Streams
-            GV.P1_Input = GV.COM_PORT_1.getInputStream();
-            GV.P1_Output = GV.COM_PORT_1.getOutputStream();
-            
-            //Init Cal
-            DateFormat dateFormat = new SimpleDateFormat ("yyyy/MM/dd HH:mm:ss:SSS");
 
-            GV.COM_PORT_1.addDataListener(new SerialPortDataListener(){
-                
-                @Override
-                public int getListeningEvents() 
-                {
-                    return SerialPort.LISTENING_EVENT_DATA_AVAILABLE;
-                }
-                
-                @Override
-                public void serialEvent(SerialPortEvent event)
-                {
-                    //If no data avail, exit function
-                    if(event.getEventType() != SerialPort.LISTENING_EVENT_DATA_AVAILABLE)
-                        return;  
-                    
-                    try {
-                        char singleData = (char)GV.P1_Input.read();
-                        
-                        if(singleData!=13) //if NotEqual CR detected
+@FXML
+private void handleOpenPort_1(ActionEvent event) throws IOException {
+    if(GV.COM_PORT_1!= null) 
+    {
+        
+        //Open Port
+        System.out.println("Initialising Connection to " + GV.COM_PORT_1);   
+        System.out.println("handleOpenPort Status: " + GV.COM_PORT_1.openPort() + " Port ID: " +GV.COM_PORT_1.getSystemPortName());
+        
+        GV.COM_PORT_1.setBaudRate(57600);   //Set Baud Rate
+
+        //Init Streams
+        GV.P1_Input = GV.COM_PORT_1.getInputStream();
+        GV.P1_Output = GV.COM_PORT_1.getOutputStream();
+
+        //Init Cal
+        DateFormat dateFormat = new SimpleDateFormat ("yyyy/MM/dd HH:mm:ss:SSS");
+
+        GV.P1_BW = new BufferedWriter(new FileWriter(GV.P1_FilePath));
+        GV.P1_BW.write("COM Port 1:");
+        GV.P1_BW.newLine();
+        
+        GV.COM_PORT_1.addDataListener(new SerialPortDataListener(){
+
+            @Override
+            public int getListeningEvents() 
+            {
+                return SerialPort.LISTENING_EVENT_DATA_AVAILABLE;
+            }
+
+            @Override
+            public void serialEvent(SerialPortEvent event)
+            {
+                //If no data avail, exit function
+                if(event.getEventType() != SerialPort.LISTENING_EVENT_DATA_AVAILABLE)
+                    return;  
+
+                try {
+                    char singleData = (char)GV.P1_Input.read();
+
+                    if(singleData!=13) //if NotEqual CR detected
+                    {
+                        if(GV.P1_Buff == null)
+                            GV.P1_Buff=Character.toString(singleData);
+                        else
+                            GV.P1_Buff = GV.P1_Buff.concat(Character.toString(singleData));
+
+                        //System.out.print(singleData);
+                    }
+                    else
+                    {     
+                        Date date = new Date();
+                        String cTime = dateFormat.format(date);
+                        P1_AddData(cTime,GV.P1_Buff);
+
+                        if(isInteger(GV.P1_Buff))
                         {
-                            if(GV.P1_Buff == null)
-                                GV.P1_Buff=Character.toString(singleData);
-                            else
-                                GV.P1_Buff = GV.P1_Buff.concat(Character.toString(singleData));
-
-                            //System.out.print(singleData);
+                            GV.P1_ValidCount++;
                         }
                         else
-                        {     
-                            Date date = new Date();
-                            String cTime = dateFormat.format(date);
-                            P1_AddData(cTime,GV.P1_Buff);
-                            
-                            
-                            
-                            GV.P1_Buff = null; //reset temp buffer
-                            
-                            //System.out.println("    " + cTime);
+                        {
+                            GV.P1_InvalidCount++;
                         }
+                        GV.P1_BW.write(cTime + ";"+ GV.P1_Buff);
+                        GV.P1_BW.newLine();
                         
-                    } catch (IOException ex) {
-                        Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
+                        GV.P1_CurrTime = System.currentTimeMillis();
+                        if(GV.P1_CurrTime > (GV.P1_PrevTime + 1000))
+                        {
+                            GV.P1_PrevTime=GV.P1_CurrTime;
+                            GV.P1_SecondsElapsed++;
+                            System.out.println("Port 1 Valid Data: " + GV.P1_ValidCount + " ; Invalid Data: " 
+                                    + GV.P1_InvalidCount + " ; " +GV.P1_SecondsElapsed + " second has passed");
+                            GV.P1_ValidCount = 0;
+                            GV.P1_InvalidCount = 0;
+                        }
+                        GV.P1_Buff = null; //reset temp buffer
                     }
-
-
+                    
+                } catch (IOException ex) {
+                    Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            });
-        }
+
+
+            }
+        });
     }
+}
         
 @FXML
 private void handleOpenPort_2(ActionEvent event) throws IOException {
@@ -148,7 +171,7 @@ private void handleOpenPort_2(ActionEvent event) throws IOException {
         System.out.println("handleOpenPort Status: " + GV.COM_PORT_2.openPort()  + " Port ID: " +GV.COM_PORT_2.getSystemPortName());
 
         //Set Baud Rate
-        GV.COM_PORT_2.setBaudRate(38400);
+        GV.COM_PORT_2.setBaudRate(57600);
 
         //Init Streams
         GV.P2_Input = GV.COM_PORT_2.getInputStream();
@@ -157,7 +180,7 @@ private void handleOpenPort_2(ActionEvent event) throws IOException {
         //Init Cal
         DateFormat dateFormat = new SimpleDateFormat ("yyyy/MM/dd HH:mm:ss:SSS");
 
-        GV.P2_BW = new BufferedWriter(new FileWriter(GV.filePath));
+        GV.P2_BW = new BufferedWriter(new FileWriter(GV.P2_FilePath));
         GV.P2_BW.write("COM Port 2:");
         GV.P2_BW.newLine();
         
@@ -205,18 +228,17 @@ private void handleOpenPort_2(ActionEvent event) throws IOException {
                         GV.P2_BW.write(cTime + ";"+ GV.P2_Buff);
                         GV.P2_BW.newLine();
                         
-                        GV.currTime = System.currentTimeMillis();
-                        if(GV.currTime > (GV.lastTime + 1000))
+                        GV.P2_CurrTime = System.currentTimeMillis();
+                        if(GV.P2_CurrTime > (GV.P2_PrevTime + 1000))
                         {
-                            GV.lastTime=GV.currTime;
-                            GV.secondsCount++;
-                            System.out.println("Valid Readings: " + GV.P2_ValidCount + " ; Invalid Readings: " 
-                                    + GV.P2_InvalidCount + " ; " +GV.secondsCount + " second has passed");
+                            GV.P2_PrevTime=GV.P2_CurrTime;
+                            GV.P2_SecondsElapsed++;
+                            System.out.println("Port 2 Valid Data: " + GV.P2_ValidCount + " ; Invalid Data: " 
+                                    + GV.P2_InvalidCount + " ; " +GV.P2_SecondsElapsed + " second has passed");
                             GV.P2_ValidCount = 0;
                             GV.P2_InvalidCount = 0;
                         }
                         GV.P2_Buff = null; //reset temp buffer
-                        //System.out.println("    " + cTime);
                     }
 
                 } catch (IOException ex) {
@@ -238,7 +260,19 @@ private void handleOpenPort_2(ActionEvent event) throws IOException {
 private void handleClosePort_1(ActionEvent event) {
     if(GV.COM_PORT_1!= null) 
     {
+        GV.COM_PORT_1.removeDataListener();
         System.out.println("handleClosePort Status: " + GV.COM_PORT_1.closePort() + " Port ID: " +GV.COM_PORT_1.getSystemPortName());
+        
+        try {
+            if(GV.P1_BW != null)
+            {
+                GV.P1_BW.flush();
+                GV.P1_BW.close();
+            }
+        }
+        catch (IOException ex)
+        {
+        }  
     }
     else
     {
@@ -250,6 +284,7 @@ private void handleClosePort_1(ActionEvent event) {
 private void handleClosePort_2(ActionEvent event) {
     if(GV.COM_PORT_2!= null) 
     {
+        GV.COM_PORT_2.removeDataListener();
         System.out.println("handleClosePort Status: " + GV.COM_PORT_2.closePort() + " Port ID: " +GV.COM_PORT_2.getSystemPortName());
         try {
             if(GV.P2_BW != null)
@@ -341,10 +376,13 @@ public void initialize(URL url, ResourceBundle rb) {
         System.out.println("ChoiceBox2 Action: " + GV.COM_PORT_2);
     });
     
-    GV.filePath = System.getProperty("user.dir");
-    System.out.println("Working Directory = " + GV.filePath);
-    GV.filePath = GV.filePath + File.separator + "FirstLog.txt";
-    System.out.println("Log File Directory =" +GV.filePath);
+    String WorkingDir = System.getProperty("user.dir");
+    System.out.println("Working Directory = " + WorkingDir);
+    GV.P1_FilePath = WorkingDir + File.separator + "PortOneLog.txt";
+    GV.P2_FilePath = WorkingDir + File.separator + "PortTwoLog.txt";
+    System.out.println("Log 1 File Directory =" +GV.P1_FilePath);
+    System.out.println("Log 2 File Directory =" +GV.P2_FilePath);
+
 }
     
 } //end of main class
@@ -380,4 +418,3 @@ class DataBank {
         DIST_VALUE.set(dValue);
     }
 }
-
