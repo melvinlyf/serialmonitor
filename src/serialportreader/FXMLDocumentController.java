@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -119,21 +120,22 @@ private void handleOpenPort_1(ActionEvent event) throws IOException {
                             GV.P1_Buff=Character.toString(singleData);
                         else
                             GV.P1_Buff = GV.P1_Buff.concat(Character.toString(singleData));
-
-                        //System.out.print(singleData);
                     }
                     else
                     {     
-                        Date date = new Date();
-                        String cTime = dateFormat.format(date);
+                        LocalTime timestamp = LocalTime.now();
+                        String cTime = String.valueOf(timestamp.toNanoOfDay());
+                        System.out.println(String.valueOf(timestamp.getHour()) 
+                                + ":" + String.valueOf(timestamp.getMinute())
+                                + ":" + String.valueOf(timestamp.getSecond())
+                                + "." + String.valueOf(timestamp.getNano()));
+                        
                         P1_AddData(cTime,GV.P1_Buff);
 
-                        if(isInteger(GV.P1_Buff))
-                        {
+                        if(isInteger(GV.P1_Buff)) {
                             GV.P1_ValidCount++;
                         }
-                        else
-                        {
+                        else {
                             GV.P1_InvalidCount++;
                         }
                         GV.P1_BW.write(cTime + ";"+ GV.P1_Buff);
@@ -212,9 +214,12 @@ private void handleOpenPort_2(ActionEvent event) throws IOException {
                         //System.out.print(singleData);
                     }
                     else
-                    {     
+                    {                           
                         Date date = new Date();
                         String cTime = dateFormat.format(date);
+                        
+                        cTime = dateFormat.format(System.currentTimeMillis());
+                        
                         P2_AddData(cTime,GV.P2_Buff);
 
                         if(isInteger(GV.P2_Buff))
